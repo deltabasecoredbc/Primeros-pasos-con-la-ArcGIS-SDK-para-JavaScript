@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Ejercicio 1B_DBC - Mapa de Finisterre</title>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <!-- Carga de estilos de la ArcGIS Maps SDK -->
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.34/esri/themes/light/main.css"
+    />
+
+    <!-- Carga de la ArcGIS Maps SDK -->
+    <script src="https://js.arcgis.com/4.34/"></script>
+
+    <script>
+      // Carga de los módulos necesarios
+      require(["esri/Map", "esri/views/MapView"], function (Map, MapView) {
+
+        // Creación del mapa con mapa base satelital
+        var map = new Map({
+          basemap: "satellite"
+        });
+
+        // Creación de la vista del mapa
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-9.27, 42.88],
+          zoom: 17
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>

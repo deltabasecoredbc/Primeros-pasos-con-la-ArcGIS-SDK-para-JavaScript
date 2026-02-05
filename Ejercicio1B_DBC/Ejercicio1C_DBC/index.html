@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 1C_DBC - Trabajando con capas</title>
+
+    <style>
+        html, body, #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.34/"></script>
+</head>
+<body>
+    <div id="viewDiv"></div>
+
+    <script>
+        // Carga de módulos necesarios: Map, MapView y FeatureLayer
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer"
+        ], function(Map, MapView, FeatureLayer) {
+
+            // Creación del mapa base global
+            var map = new Map({
+                basemap: "gray-vector"
+            });
+
+            // Creación de la vista global del planeta
+            var view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [0, 0],
+                zoom: 2
+            });
+
+            // Creación de la capa de terremotos
+            var earthquakesLayer = new FeatureLayer({
+                url: "https://services.arcgis.com/ue9rwulIoeLEI9bj/ArcGIS/rest/services/Strong_Earthquakes_2012_2014/FeatureServer/0",
+                title: "Terremotos 2012-2014"
+            });
+
+            // Adición de la capa de terremotos al mapa
+            map.add(earthquakesLayer);
+        });
+    </script>
+</body>
+</html>
