@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReactiveUtils</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.27/"></script>
+
+  <style>
+    html,
+    body,
+    #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/FeatureLayer",
+      "esri/core/reactiveUtils"
+    ],
+
+    // Se cargan los módulos necesarios para la aplicación web
+    function (Map, MapView, FeatureLayer, reactiveUtils) {
+
+      // Se construye el objeto mapa
+      var map = new Map({
+        basemap: "topo-vector"
+      });
+
+      // Se construye el objeto vista
+      var view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [140, 40],
+        zoom: 5
+      });
+
+      // Se construyen las capas
+      var earthquakes = new FeatureLayer({
+        url: "https://services.arcgis.com/ue9rwulIoeLEI9bj/ArcGIS/rest/services/Strong_Earthquakes_2012_2014/FeatureServer/0",
+        title: "Terremotos"
+      });
+
+      var countries = new FeatureLayer({
+        url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/ArcGIS/rest/services/World_Countries_(Generalized)/FeatureServer/0",
+        title: "Países"
+      });
+
+      // Se añade la capa de terremotos al mapa
+      map.add(earthquakes);
+
+      // Se utilizan los Reactive Utils para vigilar la vista y añadir la capa de países al hacer click
+      reactiveUtils.on(
+        () => view,
+        "click",
+        function () {
+          if (!map.layers.includes(countries)) {
+            map.add(countries);
+            console.log("Capa de países añadida al mapa");
+          }
+        }
+      );
+    });
+  </script>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>
