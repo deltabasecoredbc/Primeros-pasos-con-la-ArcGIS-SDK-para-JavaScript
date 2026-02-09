@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Sketch widget</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.34/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.34/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      // Se cargan los módulos necesarios de la SDK
+      require([
+        "esri/widgets/Sketch",
+        "esri/widgets/Sketch/SketchViewModel",
+        "esri/Map",
+        "esri/layers/GraphicsLayer",
+        "esri/views/MapView",
+      ], (Sketch, SketchViewModel, Map, GraphicsLayer, MapView) => {
+        // Se crea la capa gráfica donde se dibujarán los elementos
+        const graphicsLayer = new GraphicsLayer();
+
+        // Se crea el mapa y se añade la capa de gráficos
+        const map = new Map({
+          basemap: "topo-vector",
+          layers: [graphicsLayer],
+        });
+
+        // Se crea la vista del mapa
+        const view = new MapView({
+          container: "viewDiv",
+          map: map,
+          zoom: 5,
+          center: [0, 40], // Coordenadas centradas en España
+        });
+
+        // Se instancia el widget Sketch con personalización de símbolos
+        const sketch = new Sketch({
+          view: view, // Se asigna la vista
+          layer: graphicsLayer, // Se asigna la capa donde se dibujan los gráficos
+          viewModel: new SketchViewModel({
+            view: view,
+            layer: graphicsLayer,
+            // Símbolo para puntos
+            pointSymbol: {
+              type: "simple-marker",
+              style: "diamond",
+              color: [255, 255, 255, 0.8],
+              size: "12px",
+              outline: { color: [50, 50, 50], width: 1 },
+            },
+            // Símbolo para líneas
+            polylineSymbol: {
+              type: "simple-line",
+              color: [255, 130, 130],
+              width: 5,
+            },
+            // Símbolo para polígonos
+            polygonSymbol: {
+              type: "simple-fill",
+              style: "cross",
+              color: [239, 200, 177, 0.5], // Color con transparencia
+              outline: {
+                color: [81, 70, 68],
+                width: 3,
+                style: "solid",
+              },
+            },
+          }),
+        });
+
+        // Se añade el widget a la interfaz de usuario en la esquina superior derecha
+        view.ui.add(sketch, "top-right");
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
