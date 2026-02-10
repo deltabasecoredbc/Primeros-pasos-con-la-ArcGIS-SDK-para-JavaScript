@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Ejercicio 3A_DBC - Consulta por Atributo</title>
+
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/themes/light/main.css" />
+  <script src="https://js.arcgis.com/4.34/"></script>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/FeatureLayer",
+      "esri/rest/support/Query",
+      "esri/layers/GraphicsLayer"
+    ], function (Map, MapView, FeatureLayer, Query, GraphicsLayer) {
+
+      // Se crea la capa de resultados con el GraphiLayer
+      var resultsLayer = new GraphicsLayer();
+
+      // Se crea el mapa añadiendo la capa de resultados directamente
+      var map = new Map({
+        basemap: "streets",
+        layers: [resultsLayer]
+      });
+
+      // Se crea la vista del mapa
+      var view = new MapView({
+        container: "viewDiv",
+        map: map,
+        zoom: 5,
+        center: [-112.9007, 45.0379]
+      });
+
+      // Se carga la FeatureLayer de parques nacionales
+      var featureLayer = new FeatureLayer({
+        url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/national_park_service/FeatureServer/0"
+      });
+
+      map.add(featureLayer);
+
+      // Se define la consulta por atributo
+      var query = new Query({
+        where: "Location_Name = 'Fort Vancouver National Historic Site'",
+        returnGeometry: true,
+        outFields: ["City", "State", "Zip_Code", "Phone_Number"]
+      });
+
+      // Se ejecuta la consulta en la capa
+      featureLayer.queryFeatures(query)
+        .then(function (results) {
+console.log(results)
+          displayResults(results);
+        })
+        .catch(function (error) {
+          console.log(error)
+        });
+
+      // Se procesan y visualizan los resultados
+      function displayResults(results) {
+
+        var features = results.features.map(function (graphic) {
+graphic.symbol = {
+          type: "simple-marker",
+          style: "diamond",
+          color: "red",
+          size: 26.5
+        };
+          return graphic;
+        });
+
+        resultsLayer.addMany(features);
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>
