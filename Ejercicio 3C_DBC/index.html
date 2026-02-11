@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ejercicio 3C_DBC - Consultas por atributo y geometría</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.27/esri/themes/dark/main.css"
+    />
+    <script src="https://js.arcgis.com/4.27/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+        // Paso 1: Cargar módulos
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/rest/support/Query",
+        "esri/layers/GraphicsLayer",
+        "esri/Graphic",
+      ], function (Map, MapView, FeatureLayer, Query, GraphicsLayer, Graphic) {
+  
+        // Paso 2: Crear mapa y vista
+
+        var map = new Map({
+          basemap: "hybrid",
+        });
+
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-4, 40], // Centro de España
+          zoom: 6,
+        });
+
+        // Paso 3: Crear capas
+        const incendiosFL = new FeatureLayer({
+          url: "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/MODIS_Thermal_v1/FeatureServer/0",
+        });
+
+        const paisesMundoFL = new FeatureLayer({
+          url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Countries/FeatureServer/0",
+        });
+
+        // Capa gráfica para resultados
+        const resultadoGL = new GraphicsLayer();
+
+
+        // Paso 4: Consulta España
+
+        var queryEspaña = new Query({
+          where: "ISO_CC ='ESP'",
+          returnGeometry: true,
+          outFields: ["COUNTRY"],
+        });
+
+        paisesMundoFL.queryFeatures(queryEspaña).then(function (results) {
+          // Se itera sobre cada polígono de España
+          results.features.map((poligono) => {
+
+            // Paso 5: Consulta incendios dentro de España
+
+            const queryPoligonos = new Query({
+              geometry: poligono.geometry,
+              spatialRelationship: "contains", // CORRECCIÓN
+              where: "CONFIDENCE > 0", // Para asegurar que se dibujan algunos incendios
+              returnGeometry: true,
+            });
+
+            // Paso 6: Visualización
+
+            incendiosFL.queryFeatures(queryPoligonos).then(function (results) {
+              results.features.map((entidad) => {
+                const incendioGraphic = new Graphic({
+                  geometry: entidad.geometry,
+                  symbol: {
+                    type: "picture-marker",
+                    url: "https://img.pikbest.com/png-images/20240920/fire-flame-flat-icon-pixel-perfect-for-mobile-and-web_10869714.png!w700wp",
+                    width: "48px",
+                    height: "48px",
+                  },
+                });
+                resultadoGL.add(incendioGraphic);
+              });
+
+              // Paso 7: Añadir la capa gráfica al mapa de resultados
+
+              map.add(resultadoGL);
+            });
+          });
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
