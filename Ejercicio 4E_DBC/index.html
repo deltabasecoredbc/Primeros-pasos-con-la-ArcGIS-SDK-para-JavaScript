@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ejercicio 4E - Red Natura 2000 - Popup y Unique Value Renderer - DBC</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.34/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.34/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      // Paso 1: Cargar los módulos necesarios para la webapp
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/core/reactiveUtils",
+      ], (Map, MapView, FeatureLayer, reactiveUtils) => {
+        // Paso 3 (parte 1): Definir la acción personalizada del popup (Rotar)
+        const viewRotateAction = {
+          title: "Rotar",
+          id: "rotate",
+          className: "esri-icon-rotate",
+        };
+
+        // Paso 2: Crear la plantilla del popup con campos y expresión de hectáreas
+        const plantillaPopup = {
+          title: "Zona de reserva de {SOName}",
+          content: [
+            {
+              type: "fields",
+              fieldInfos: [
+                { fieldName: "localId", label: "Id Local" },
+                { fieldName: "TIPO_NUEVO", label: "Tipo de reserva" },
+                {
+                  fieldName: "expression/hectareas",
+                  label: "Superficie (ha)",
+                },
+              ],
+            },
+          ],
+          // Expresión Arcade para convertir m² a hectáreas y formatear con punto como separador de miles
+          expressionInfos: [
+            {
+              name: "hectareas",
+              title: "Hectáreas",
+              expression: `
+              var ha = $feature.Shape__Area / 10000;
+              var txt = Text(ha, "#,###");
+              // Cambiar coma por punto
+              txt = Replace(txt, ",", ".");
+              return txt;
+            `,
+            },
+          ],
+          // Paso 3 (parte 2): Añadir la acción de rotación al popup
+          actions: [viewRotateAction],
+        };
+
+        // Paso 4 (parte 1): Crear el mapa base
+        const mapa = new Map({
+          basemap: "dark-gray-vector",
+        });
+
+        // Paso 4 (parte 2): Crear la vista y configurar las opciones globales del popup
+        const vista = new MapView({
+          container: "viewDiv",
+          map: mapa,
+          center: [-5.788424605, 35.3467664737],
+          zoom: 4,
+          popup: {
+            dockEnabled: true,
+            dockOptions: {
+              buttonEnabled: false,
+              breakpoint: false,
+              position: "bottom-left",
+            },
+          },
+        });
+
+        // Paso 3 (parte 3): Función que ejecuta la acción del popup (rotar la vista 45º)
+        function rotateView() {
+          vista.goTo({
+            rotation: 45,
+          });
+        }
+
+        // Paso 3 (parte 4): Asociar el evento de la acción del popup mediante reactiveUtils
+        reactiveUtils.on(
+          () => vista.popup,
+          "trigger-action",
+          (event) => {
+            if (event.action.id === "rotate") {
+              rotateView();
+            }
+          },
+        );
+
+        // Paso 5: Crear la capa, asignar el Unique Value Renderer y la plantilla del popup
+        const capa = new FeatureLayer({
+          url: "https://services1.arcgis.com/nCKYwcSONQTkPA4K/arcgis/rest/services/Red_Natura_2000/FeatureServer/0",
+          renderer: {
+            type: "unique-value",
+            field: "TIPO_NUEVO",
+            defaultSymbol: {
+              type: "simple-fill",
+              color: [200, 200, 200, 0.3],
+            },
+            uniqueValueInfos: [
+              {
+                value: "ZEPA",
+                symbol: {
+                  type: "simple-fill",
+                  color: [255, 255, 0, 1],
+                  style: "diagonal-cross",
+                },
+              },
+              {
+                value: "LIC",
+                symbol: {
+                  type: "simple-fill",
+                  color: [255, 102, 0, 1],
+                },
+              },
+            ],
+          },
+          popupTemplate: plantillaPopup,
+        });
+
+        // Paso 5 (final): Añadir la capa al mapa para visualizarla en la vista
+        mapa.add(capa);
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>

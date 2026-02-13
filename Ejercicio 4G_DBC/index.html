@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ejercicio 4G - Análisis ráster - DBC</title>
+
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/themes/dark/main.css">
+  <script src="https://js.arcgis.com/4.34/"></script>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/ImageryLayer",
+      "esri/layers/support/RasterFunction",
+      "esri/layers/support/rasterFunctionConstants"
+    ], function(Map, MapView, ImageryLayer, RasterFunction, rasterFunctionConstants) {
+
+      // Paso 2: Crear el mapa y la vista
+      let map = new Map({
+        basemap: "topo-vector"
+      });
+
+      let view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [-16.44, 28.38],   // Canarias
+        zoom: 12
+      });
+
+      // Paso 3: Definir la función ráster NDVI
+      let funcionRaster = new RasterFunction({
+        functionName: "NDVI",
+        functionArguments: {
+          visibleBandID: 3,   // Banda roja (Sentinel-2)
+          infraredBandID: 7   // Banda NIR (Sentinel-2)
+        }
+      });
+
+      // Paso 3 (parte 2): Aplicar Colormap para colorear el NDVI
+      let colormap = new RasterFunction({
+        functionName: "Colormap",
+        functionArguments: {
+          colormapName: rasterFunctionConstants.colormapName.NDVI2,
+          raster: funcionRaster
+        }
+      });
+
+      // Paso 4: Consumir el servicio de imágenes y aplicar la cadena de funciones
+      let imagen = new ImageryLayer({
+        url: "https://sentinel.arcgis.com/arcgis/rest/services/Sentinel2/ImageServer",
+        rasterFunction: colormap,
+        effect: "saturate(150%)"
+      });
+
+      // Añadir la capa al mapa
+      map.add(imagen);
+
+    });
+  </script>
+
+</head>
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>

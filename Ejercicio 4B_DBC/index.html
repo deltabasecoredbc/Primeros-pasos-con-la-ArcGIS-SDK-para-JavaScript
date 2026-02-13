@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Ejercicio 4B - Unique Values Renderer - DBC</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.34/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.34/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      .esri-legend {
+        background-color: black;
+        color: white;
+        opacity: 0.85;
+      }
+    </style>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+      ], function (Map, MapView, FeatureLayer) {
+        // Paso 1: Se crea el renderizador de valores únicos
+        var farmsRenderer = {
+          type: "unique-value", // Tipo de renderizador
+          field: "PARCEL_TYP", // Campo que se usa para diferenciar valores
+          defaultSymbol: {
+            type: "simple-fill", // Símbolo por defecto
+            color: "lightgray",
+            outline: {
+              width: 1,
+              color: "black",
+            },
+          },
+          // Paso 2: Se configuran los colores para cada valor
+          uniqueValueInfos: [
+            {
+              value: "NON-SEVER EXCEPTION",
+              symbol: {
+                type: "simple-fill",
+                color: "green",
+                outline: { width: 1, color: "black" },
+              },
+            },
+            {
+              value: "PARCEL",
+              symbol: {
+                type: "simple-fill",
+                color: "yellow",
+                outline: { width: 1, color: "black" },
+              },
+            },
+            {
+              value: "SEVERABLE EXCEPTION",
+              symbol: {
+                type: "simple-fill",
+                color: "blue",
+                outline: { width: 1, color: "black" },
+              },
+            },
+          ],
+        };
+
+        // Paso 3: Se crea la feature layer y se aplica el renderizador
+        var farmsLayer = new FeatureLayer({
+          url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/NJ_Farmland_Preservation_Areas/FeatureServer/0",
+          renderer: farmsRenderer,
+          minScale: 0,
+          maxScale: 0,
+        });
+
+        // Se crea el mapa y se añade la capa
+        var map = new Map({
+          basemap: "streets",
+          layers: [farmsLayer],
+        });
+
+        // Se crea la vista del mapa
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-74.67373, 40.15036],
+          zoom: 11,
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
